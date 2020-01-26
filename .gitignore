@@ -1,3 +1,4 @@
 /target/
 /.idea/
-/web-customer-tracker.iml
+*.iml
+.DS_Store
