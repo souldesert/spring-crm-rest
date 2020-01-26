@@ -1,6 +1,8 @@
 package ru.voskhod.springdemo.dao;
 
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.voskhod.springdemo.entity.Customer;
@@ -12,61 +14,66 @@ import java.util.List;
 @Repository
 public class CustomerDAOImpl implements CustomerDAO {
 
-    private EntityManagerFactory entityManagerFactory;
+    private SessionFactory sessionFactory;
 
     @Autowired
-    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
     public List<Customer> getCustomers() {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.joinTransaction();
-        return entityManager.createQuery("SELECT c FROM Customer c ORDER BY lastName", Customer.class).getResultList();
+
+        // get the current hibernate session
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        // create a query  ... sort by last name
+        Query<Customer> theQuery =
+                currentSession.createQuery("from Customer order by lastName",
+                        Customer.class);
+
+        // execute query and get result list
+        List<Customer> customers = theQuery.getResultList();
+
+        // return the results
+        return customers;
     }
 
     @Override
-    public void saveCustomer(Customer customer) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+    public void saveCustomer(Customer theCustomer) {
 
-        Session session = entityManager.unwrap(Session.class);
+        // get current hibernate session
+        Session currentSession = sessionFactory.getCurrentSession();
 
-        // save or update the customer
-        session.saveOrUpdate(customer);
+        // save/upate the customer ... finally LOL
+        currentSession.saveOrUpdate(theCustomer);
 
     }
 
     @Override
-    public Customer getCustomer(int id) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.joinTransaction();
-        return entityManager.find(Customer.class, id);
+    public Customer getCustomer(int theId) {
+
+        // get the current hibernate session
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        // now retrieve/read from database using the primary key
+        Customer theCustomer = currentSession.get(Customer.class, theId);
+
+        return theCustomer;
     }
 
     @Override
-    public void deleteCustomer(int id) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.joinTransaction();
+    public void deleteCustomer(int theId) {
 
-        entityManager
-                .createQuery("DELETE FROM Customer where id=:customerId")
-                .setParameter("customerId", id)
-                .executeUpdate();
-    }
+        // get the current hibernate session
+        Session currentSession = sessionFactory.getCurrentSession();
 
-    @Override
-    public List<Customer> findCustomersByName(String searchName) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.joinTransaction();
+        // delete object with primary key
+        Query theQuery =
+                currentSession.createQuery("delete from Customer where id=:customerId");
+        theQuery.setParameter("customerId", theId);
 
-        return entityManager
-                .createQuery(
-                        "SELECT c FROM Customer c " +
-                                "WHERE c.firstName LIKE CONCAT('%', :searchName, '%') " +
-                                "OR c.lastName LIKE CONCAT('%', :searchName, '%')",
-                        Customer.class).setParameter("searchName", searchName)
-                .getResultList();
+        theQuery.executeUpdate();
     }
 
 }
