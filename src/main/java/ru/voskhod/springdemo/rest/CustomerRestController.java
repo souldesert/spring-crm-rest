@@ -1,10 +1,7 @@
 package ru.voskhod.springdemo.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.voskhod.springdemo.entity.Customer;
 import ru.voskhod.springdemo.service.CustomerService;
 
@@ -31,7 +28,25 @@ public class CustomerRestController {
     // add mapping for GET /customers/{customerId}
     @GetMapping("/customers/{customerId}")
     public Customer getCustomer(@PathVariable int customerId) {
-        return customerService.getCustomer(customerId);
+        Customer customer = customerService.getCustomer(customerId);
+
+        if (customer == null) {
+            throw new CustomerNotFoundException("Customer with id: " + customerId + " not found");
+        }
+
+        return customer;
+    }
+
+    // add mapping for POST /customers
+    @PostMapping("/customers")
+    public Customer addCustomer(@RequestBody Customer customer) {
+
+        // force INSERT instead of UPDATE
+        customer.setId(0);
+
+        customerService.saveCustomer(customer);
+
+        return customer;
     }
 
 }

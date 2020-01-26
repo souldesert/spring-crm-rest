@@ -1,5 +1,6 @@
 package ru.voskhod.springdemo.dao;
 
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.voskhod.springdemo.entity.Customer;
@@ -29,12 +30,10 @@ public class CustomerDAOImpl implements CustomerDAO {
     public void saveCustomer(Customer customer) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        // todo выяснить почему автоматически не подхватывается транзакция
-        // (а если сделать unwrap и получить Session все работает ок)
-        entityManager.joinTransaction();
+        Session session = entityManager.unwrap(Session.class);
 
         // save or update the customer
-        entityManager.merge(customer);
+        session.saveOrUpdate(customer);
 
     }
 
