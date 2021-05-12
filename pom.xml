@@ -22,7 +22,7 @@
     <hibernate.version>5.4.10.Final</hibernate.version>
     <mysql.connector.version>8.0.18</mysql.connector.version>
     <c3p0.version>0.9.5.5</c3p0.version>
-    <springsecurity.version>5.2.1.RELEASE</springsecurity.version>
+    <springsecurity.version>5.2.10.RELEASE</springsecurity.version>
   </properties>
 
   <dependencies>
